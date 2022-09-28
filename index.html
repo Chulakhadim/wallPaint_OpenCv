@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Hello OpenCV.js</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <div class="container mx-auto mt-10">
+        <p id="status" class="mb-16 border-2 p-4">OpenCV.js is loading...</p>
+
+        <div>
+            <h1 class="font-bold">Referensi:</h1>
+            <ul class="text-sm ml-4 mb-4">
+                <li>
+                    <a href="https://stacks.stanford.edu/file/druid:yj296hj2790/Yeung_Piersol_Liu_Project_Imaggle.pdf"
+                        class="hover:text-sky-300" target="_blank">1. Dokument coloring wall using IOS</a>
+                </li>
+                <li><a href="https://blog.nirmites.com/canny-edge-detection-how-does-this-work-with-opencv-python/"
+                        class="hover:text-sky-300" target="_blank">2. Canny
+                        detection</a></li>
+                <li><a href="https://sushanta1991.blogspot.com/2021/09/how-to-paint-wall-using-opencv-in-unity.html"
+                        class="hover:text-sky-300" target="_blank">3. Program dengan unity</a></li>
+                <li><a href="https://docs.opencv.org/3.4/d5/d10/tutorial_js_root.html" class="hover:text-sky-300"
+                        target="_blank">4.
+                        OpenCv JS</a></li>
+                <li><a href="https://answers.opencv.org/question/195457/floodfill-missing-in-opencvjs/"
+                        class="hover:text-sky-300" target="_blank">5. FloodFill JS?</a></li>
+                <li><a href="https://www.youtube.com/watch?v=a7qCVxq-dWE&ab_channel=CodingAdventures"
+                        class="hover:text-sky-300" target="_blank">6. FloodFill JS YT?</a></li>
+            </ul>
+
+            <!-- codenya ========================================================================== -->
+            <h1 class="font-bold">PaintWall Ex.</h1>
+            <div class="grid grid-cols-3 gap-4 mb-3 border-b-2 py-4">
+                <div>
+                    <img id="pwImg" alt="No Image" class="h-52 mb-4" />
+                    <div class="caption">imageSrc <input type="file" id="pwInput" name="file" /></div>
+                </div>
+                <div>
+                    <canvas id="pwOutput" class="h-52"></canvas>
+                    <div class="caption">Blur</div>
+                </div>
+                <div>
+                    <!-- <button class="bg-sky-500 px-3 py-1 mb-4 rounded text-white font-bold hover:bg-sky-400"
+                                onclick="cobaCanny()">Try
+                                It</button> -->
+                    <canvas id="pwOutput1" class="h-52"></canvas>
+                    <div class="caption">Canny</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mb-3 border-b-2 py-4">
+                <div>
+                    <!-- <button class="bg-sky-500 px-3 py-1 mb-4 rounded text-white font-bold hover:bg-sky-400"
+                    onclick="cobaCanny()">Try
+                    It</button> -->
+                    <canvas id="pwOutput2" class="h-52"></canvas>
+                    <div class="caption">FloodFill</div>
+                </div>
+                <div>
+                    <!-- <button class="bg-sky-500 px-3 py-1 mb-4 rounded text-white font-bold hover:bg-sky-400"
+                    onclick="cobaDilate()">Try
+                    It</button> -->
+                    <canvas id="pwOutput3" class="h-52"></canvas>
+                    <div class="caption">Dilate</div>
+                </div>
+                <div>
+                    <!-- <button class="bg-sky-500 px-3 py-1 mb-4 rounded text-white font-bold hover:bg-sky-400"
+                    onclick="cobaErode()">Try
+                    It</button> -->
+                    <canvas id="pwOutput4" class="h-52"></canvas>
+                    <div class="caption">Erode</div>
+                </div>
+            </div>
+            <p id="poss"></p>
+        </div>
+
+
+        <h1 class="font-bold">B&W Ex.</h1>
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <img id="imageSrc" alt="No Image" class="h-52 mb-4" />
+                <div class="caption">imageSrc <input type="file" id="fileInput" name="file" /></div>
+            </div>
+            <div>
+                <canvas id="canvasOutput1" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+        <h1 class="font-bold">Trackbar Ex.</h1>
+        <div class="mb-4">
+            <h3 class="inline mr-2">Trackbar</h3>
+            <input type="range" id="trackbar" value="50" min="0" max="100" step="1" oninput="callback()">
+        </div>
+        <div class="grid grid-cols-3 gap-4 mb-3 border-b-2 py-4">
+            <div class="inputoutput">
+                <img id="imageSrc1" alt="No Image" class="h-52" src="./assets/img1.png" />
+                <div class="caption">
+                    imageSrc1
+                </div>
+            </div>
+            <div class="inputoutput">
+                <img id="imageSrc2" alt="No Image" class="h-52" src="./assets/img2.png" />
+                <div class="caption">
+                    imageSrc2
+                </div>
+            </div>
+            <div class="inputoutput">
+                <canvas id="canvasOutput2" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+
+        <h1 class="font-bold mb-2">Watershed SegmentBG Ex.</h1>
+        <button class="bg-sky-500 px-3 py-1 rounded text-white font-bold hover:bg-sky-400" onclick="watershed()">Try
+            It</button>
+
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <img id="imageSrc4" alt="No Image" class="h-52 mb-4" src="./assets/img3.png" />
+                <div class="caption">imageSrc</div>
+            </div>
+            <div>
+                <canvas id="canvasOutput4" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+        <h1 class="font-bold mb-4">Canny Detection Ex.</h1>
+
+        <div class="mb-2">
+            <h3 class="inline mr-2">Threshold 1</h3>
+            <input type="range" id="trackbar2" value="50" min="0" max="100" step="1" oninput="threshold()">
+        </div>
+        <div class="mb-2">
+            <h3 class="inline mr-2">Threshold 2</h3>
+            <input type="range" id="trackbar3" value="50" min="0" max="100" step="1" oninput="threshold()">
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <img id="imageSrc3" alt="No Image" class="h-52 mb-4" src="./assets/imgroom.jpg" />
+                <div class="caption">imageSrc</div>
+            </div>
+            <div>
+                <canvas id="canvasOutput3" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+        <h1 class="font-bold mb-4">Image Dilate Ex.</h1>
+        <button class="bg-sky-500 px-3 py-1 rounded text-white font-bold hover:bg-sky-400" onclick="dilate()">Try
+            It</button>
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <img id="imageDilate" alt="No Image" class="h-52 mb-4" src="./assets/imgroom.jpg" />
+                <div class="caption">imageSrc</div>
+            </div>
+            <div>
+                <canvas id="dilateOutput" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+        <h1 class="font-bold mb-4">Image Erode Ex.</h1>
+        <button class="bg-sky-500 px-3 py-1 rounded text-white font-bold hover:bg-sky-400" onclick="erode()">Try
+            It</button>
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <img id="imageErode" alt="No Image" class="h-52 mb-4" src="./assets/imgroom.jpg" />
+                <div class="caption">imageSrc</div>
+            </div>
+            <div>
+                <canvas id="erodeOutput" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+
+        <!-- <h1 class="font-bold mb-2">Coloring of Wall Ex.</h1>
+        <button class="bg-sky-500 px-3 py-1 rounded text-white font-bold hover:bg-sky-400" onclick="cobaPy()">Try
+            It</button>
+        <div class="mb-2">
+            <h3 class="inline mr-2">Threshold 1</h3>
+            <input type="range" id="trackbar2" value="50" min="0" max="100" step="1" oninput="threshold()">
+        </div>
+        <div class="mb-2">
+            <h3 class="inline mr-2">Threshold 2</h3>
+            <input type="range" id="trackbar3" value="50" min="0" max="100" step="1" oninput="threshold()">
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <img id="imageSrc5" alt="No Image" class="h-52 mb-4" src="./assets/imgroom.jpg" />
+                <div class="caption">imageSrc</div>
+            </div>
+            <div>
+                <canvas id="canvasOutput5" class="h-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div> -->
+
+        <h1 class="font-bold mb-2">Floodfill Ex.</h1>
+        <button class="bg-sky-500 px-3 py-1 rounded text-white font-bold hover:bg-sky-400" onclick="cobaPy()">Try
+            It</button>
+        <div class="grid grid-cols-2 gap-4 mb-3 border-b-2 py-4">
+            <div>
+                <canvas id="floodfill" class="h-52 border-2 w-52"></canvas>
+                <div class="caption">canvasOutput</div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+    <script src="app.js" type="text/javascript"></script>
+    <script async src="opencv.js" type="text/javascript"></script>
+</body>
+
+</html>
