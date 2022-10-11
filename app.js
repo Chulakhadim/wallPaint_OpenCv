@@ -8,18 +8,6 @@ let inputElement = document.getElementById('fileInput');
 let pwImg = document.getElementById('pwImg');
 let pwInput = document.getElementById('pwInput');
 
-inputElement.addEventListener('change', (e) => {
-    imgElement.src = URL.createObjectURL(e.target.files[0]);
-}, false);
-imgElement.onload = function () {
-    let src = cv.imread(imgElement);
-    let dst = new cv.Mat();
-    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-    cv.imshow('canvasOutput1', dst);
-    src.delete();
-    dst.delete();
-};
-
 
 // codenya ============================================
 pwInput.addEventListener('change', (e) => {
@@ -30,13 +18,72 @@ pwImg.onload = function () {
     let dst = new cv.Mat();
     let ksize = new cv.Size(5, 5);
     cv.GaussianBlur(src, dst, ksize, 0, 0, cv.BORDER_DEFAULT);
-    cv.imshow('pwOutput', dst);
+    cv.imshow('pwOutput2', src);
+    // cv.imshow('pwOutput2', src);
     src.delete(); dst.delete();
     cobaCanny();
 };
+// Cobacoba ==========================================
+var theInput = document.getElementById("favcolor");
+var elm = document.getElementById('pwOutput2');
+elm.addEventListener('mousedown', getPosition, false);
+function getPosition(e) {
+    // pos & color
+    var bnds = e.target.getBoundingClientRect();
+    var x = e.clientX - bnds.left;
+    var y = e.clientY - bnds.top;
+    var color = theInput.value;
+    let codes = color.replace("#", "").split('')
+    let r = parseInt(codes[0] + codes[1], 16)
+    let g = parseInt(codes[2] + codes[3], 16)
+    let b = parseInt(codes[4] + codes[5], 16)
+    //
+    let src = cv.imread(pwImg);
+    let cannyMinThree = 30;
+    let retio = 2.5;
+
+
+    let rgb = new cv.Mat();
+    cv.cvtColor(src, rgb, cv.COLOR_RGBA2RGB);
+    // let mask = cv.Mat(cv.Size(rgb.width() / 8, rgb.height() / 8), cv.CV_8UC1, cv.Scalar(0));
+    let gray = new cv.Mat();
+    cv.cvtColor(rgb, gray, cv.COLOR_RGB2GRAY, 3);
+    let gblur = new cv.Mat();
+    let ksize0 = new cv.Size(1, 1);
+    cv.GaussianBlur(gray, gblur, ksize0, 0, 0, cv.BORDER_DEFAULT);
+    let cannyGray = new cv.Mat();
+    let mask = cv.matFromArray(3, 3, cv.CV_8UC1, [0, -1, 0, -1, 5, -1, 0, -1, 0]);
+    // src.size().width
+    // let mask = cv.Mat(new cv.Size(rgb.size().width / 8, rgb.size().height / 8), cv.CV_8UC1, new cv.Scalar(0));
+    cv.Canny(gblur, cannyGray, 30, 60, 3);
+    let hsv = new cv.Mat();
+    cv.cvtColor(rgb, hsv, cv.COLOR_RGB2HSV);
+    let list = new cv.MatVector();
+    cv.split(hsv, list);
+    let sChannel = new cv.Mat();
+    let sList = new cv.MatVector();
+    sList.push_back(list.get(1));
+    cv.merge(sList, sChannel);
+    let ksize = new cv.Size(5, 5);
+    cv.GaussianBlur(sChannel, sChannel, ksize, 0, 0, cv.BORDER_DEFAULT);
+    // cv.medianBlur(sChannel, sChannel, 3);
+    let canny = new cv.Mat();
+    cv.Canny(sChannel, canny, 30, 30 * 2.5, 3, false);
+    cv.addWeighted(canny, 0.5, cannyGray, 0.1, 0, canny);
+    // cv.imshow('pwOutput2', canny);
+    cv.dilate(canny, canny, mask, new cv.Point(0, 0), 0.1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
+    let seedPoint = new cv.Point(parseInt(x), parseInt(y));
+    cv.resize(canny, canny, new cv.Size(canny.cols + 2, canny.rows + 2));
+    cv.floodFill(rgb, canny, seedPoint, new cv.Scalar(r, g, b), new cv.Rect(0, 0, 0, 0), new cv.Scalar(5, 5, 5), new cv.Scalar(5, 5, 5), 8);
+    cv.imshow('pwOutput2', rgb);
+
+
+    src.delete();
+}
+
 
 function cobaCanny() {
-    let src = cv.imread('pwOutput');
+    let src = cv.imread('pwOutput2');
     let dst = new cv.Mat();
     cv.Canny(src, dst, 30, 30 * 2.5, 3, false);
     cv.imshow('pwOutput1', dst);
@@ -45,35 +92,35 @@ function cobaCanny() {
     cobaDilate();
 
 };
-function cobaFill() {
-    let src = cv.imread('pwOutput4');
-    let size = src.size();
-    let pt = new cv.Point(size.width / 2, size.height / 2);
-    let range = [64, 64, 64, 0];
+// function cobaFill() {
+//     let src = cv.imread('pwOutput4');
+//     let size = src.size();
+//     let pt = new cv.Point(size.width / 2, size.height / 2);
+//     let range = [64, 64, 64, 0];
 
-    cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
-    let mask = new cv.Mat.zeros(size.height + 2, size.width + 2, cv.CV_8U);
-    cv.floodFill(src, mask, pt, new cv.Scalar(), new cv.Rect(), range, range, (cv.FLOODFILL_MASK_ONLY));
-    cv.threshold(mask, mask, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
+//     cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+//     let mask = new cv.Mat.zeros(size.height + 2, size.width + 2, cv.CV_8U);
+//     cv.floodFill(src, mask, pt, new cv.Scalar(), new cv.Rect(), range, range, (cv.FLOODFILL_MASK_ONLY));
+//     cv.threshold(mask, mask, 0, 255, cv.THRESH_BINARY_INV + cv.THRESH_OTSU);
 
-    cv.imshow('pwOutput2', mask);
-    src.delete(); mask.delete();
-    // cobaDilate();
+//     cv.imshow('pwOutput2', mask);
+//     src.delete(); mask.delete();
+//     // cobaDilate();
 
-    // let mRgbMat = cv.imread('pwOutput1');
-    // cv.cvtColor(mRgbMat, mRgbMat, cv.COLOR_RGBA2RGB);
-    // let mask = new cv.Mat(new Size(mRgbMat.cols() / 8.0, mRgbMat.rows() / 8.0), CvType.CV_8UC1, new Scalar(0.0));
-    // let img = new cv.Mat();
-    // mRgbMat.copyTo(img);
-    // let mGreyScaleMat = new cv.Mat();
-    // cv.cvtColor(mRgbMat, mGreyScaleMat, Imgproc.COLOR_RGB2GRAY, 3);
-    // cv.medianBlur(mGreyScaleMat, mGreyScaleMat, 3);
-    // let cannyGreyMat = new cv.Mat();
-    // cv.Canny(mGreyScaleMat, cannyGreyMat, 30, 30 * 2.5, 3);
-    // let hsvImage = new cv.Mat();
-    // cv.cvtColor(img, hsvImage, Imgproc.COLOR_RGB2HSV);
-    // cv.imshow('pwOutput2', hsvImage);
-};
+//     // let mRgbMat = cv.imread('pwOutput1');
+//     // cv.cvtColor(mRgbMat, mRgbMat, cv.COLOR_RGBA2RGB);
+//     // let mask = new cv.Mat(new Size(mRgbMat.cols() / 8.0, mRgbMat.rows() / 8.0), CvType.CV_8UC1, new Scalar(0.0));
+//     // let img = new cv.Mat();
+//     // mRgbMat.copyTo(img);
+//     // let mGreyScaleMat = new cv.Mat();
+//     // cv.cvtColor(mRgbMat, mGreyScaleMat, Imgproc.COLOR_RGB2GRAY, 3);
+//     // cv.medianBlur(mGreyScaleMat, mGreyScaleMat, 3);
+//     // let cannyGreyMat = new cv.Mat();
+//     // cv.Canny(mGreyScaleMat, cannyGreyMat, 30, 30 * 2.5, 3);
+//     // let hsvImage = new cv.Mat();
+//     // cv.cvtColor(img, hsvImage, Imgproc.COLOR_RGB2HSV);
+//     // cv.imshow('pwOutput2', hsvImage);
+// };
 
 function cobaDilate() {
     let src = cv.imread('pwOutput1');
@@ -95,26 +142,6 @@ function cobaErode() {
     src.delete(); dst.delete(); M.delete();
     cobaFill();
 };
-
-
-// Cobacoba ==========================================
-var elm = document.getElementById('pwOutput2');
-elm.addEventListener('click', getPosition, false);
-function getPosition(e) {
-    var bnds = e.target.getBoundingClientRect();
-    var x = e.clientX - bnds.left;
-    var y = e.clientY - bnds.top;
-    var pelem = document.getElementById('poss');
-    let src = cv.imread('pwOutput2');
-    let dst = new cv.Mat();
-    let z = parseInt(x) + parseInt(y);
-    cv.Canny(src, dst, 30, 30 * 2.5, 3, false);
-    cv.imshow('pwOutput2', dst);
-    src.delete(); dst.delete();
-
-    pelem.innerHTML = "pos x: " + x + "; pos y:" + y;
-}
-
 function fill() {
     var index
 }
